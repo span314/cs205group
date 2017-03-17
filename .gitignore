@@ -1,3 +1,4 @@
 **/*.o
 **/.deps/
 unit_tests
+.DS_Store
