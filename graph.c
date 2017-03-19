@@ -2,6 +2,7 @@
 
 Graph* create_graph(int node_count) {
   Graph* g = malloc(sizeof(Graph));
+  g-> node_count = node_count;
   g->edges = malloc(sizeof(Edge*) * node_count);
   for (int i = 0; i < node_count; i++)
     g->edges[i] = NULL;
