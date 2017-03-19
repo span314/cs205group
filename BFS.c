@@ -22,7 +22,7 @@ Graph* build_graph_from_file(char* fn) {
 	// Create graph object 
 	int u, v, w;
 	int n_nodes = pow(2,scale);
-	Graph* G = create_graph(n_nodes);
+	Graph* G = create_graph(n_nodes*2);
 	
 	FILE *ptr_file;
 	ptr_file = fopen(fn,"r");
@@ -94,7 +94,7 @@ void print_path(int start,int goal,int* parent){
 }
 				
 void p_arr(int* arr, int N, char* str){
-	printf("\n %s:",str);
+	printf("\n%s:",str);
 	
 	for (int i=0; i<N; i++){
 		printf("%i,",arr[i]);
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
 	char* fn = argv[2];
 	Graph* G = build_graph_from_file(fn);
 	
-	int N = G -> node_count;
+	int N = G -> node_count/2;
 
 	int goal = atoi(argv[1]); 
 	
@@ -141,7 +141,6 @@ int main(int argc, char *argv[]) {
 		dist += 1;
 		printf("\n**Dist %i\n",dist);
 		
-		
 		for (i=fron_start; i<fron_limit; i++){
 			y[i]=0;
 			
@@ -152,59 +151,41 @@ int main(int argc, char *argv[]) {
 			Edge *head = G->edges[parent_id];
 			printf("at %i\n",parent_id);
 			while (head) {
-				printf("Finding new node\n");
-				if(head){printf("Head defined\n");}
-				j = head->node;
-				printf("Sub 1\n");
-				j -= 1; 
-				printf("Looking at %i\n",j+1);
-				if(j < 0 || j > N-1){
-					// This should not be needed, but sometimes I'm following nodes into undefined space... 
-					printf("**Break!**");
-					break;
-					}
-		
-				   if(j !=0 && level[j] == 0){
+				j = head->node -1; 
+				if(j !=0 && level[j] == 0){
 					//printf("found %i\n",j+1);
 					frontier[fron_limit] = j+1; 
 					fron_limit += 1;
 					level[j] = level[parent_id-1] + 1;
-					parent[j] = parent_id;
-
-					
-				} else{
-					//printf("See %i again\n",j+1);
+					parent[j] = parent_id;	
 				}
 				
-				y[i] += 1 + x[j];
-				printf("Done with %i\n",j+1);
+				y[i] = y[i] || 1 + x[i];
 				head = head->next;
-				printf("Moving Head\n");
-				}
-				printf("Done with par %i\n",parent_id);
-				frontier[i] = -1;
-				fron_start +=1;
-				//p_arr(parent,N,"parent");
-				//p_arr(level,N,"level");	
-
+			}
+			frontier[i] = -1;
+			fron_start +=1;
 		}
 		
-			
+		p_arr(y,N,"y");
+		p_arr(x,N,"x"); 
 		for (i = 0; i < N; i++){
-			if(i !=0 && level[i] == 0 &&  x[i] == 0 && y[i] == 1){
-				//printf("**found %i\n",i+1);			
-			}
-			x[i] = y[i];
+			
+			x[i] += y[i];
+		}
 		
-	
-	}}
+
+	}
 					
-	//p_arr(x,N,"x"); 
-	
 	p_arr(parent,N,"parent");
 	p_arr(level,N,"level");
 	
-	print_path(1,goal,parent);
+	if(level[goal-1] > 0){
+		print_path(1,goal,parent);
+	} else{
+		printf("Unable to find path to %i",goal);
+	}
+	
 	free_graph(G);
 
 }
