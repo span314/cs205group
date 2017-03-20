@@ -52,22 +52,21 @@ Graph* build_graph_from_file(char* fn) {
 	}
 
 	// Create graph object
-	int u, v, w;
 	int n_nodes = pow(2,scale);
-	//int n_nodes= 100000;
-	Graph* G = create_graph(n_nodes*2); // Doubling node number because otherwise I run into memory issues
+	Graph* G = create_graph(n_nodes);
 
 	FILE *ptr_file;
 	ptr_file = fopen(fn,"r");
-
 	if (!ptr_file){
 		printf("Warning: File %s not found\n",fn);}
 
 	// Read in file and add edges
+	int u, v, w;
 	while (fscanf(ptr_file, "%i %i %i", &u,&v,&w)!=EOF){
-		//printf("%i->%i\n",u,v);
-		add_dedge(G, u, v);
+		/*printf("%i-%i->%i\n",u,w,v);*/
+		add_dedge(G, u-1, v-1);
 	}
+
 	fclose(ptr_file);
 	return G;
 }
