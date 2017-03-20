@@ -5,10 +5,7 @@
 
 #define inf INFINITY
 
-float* floyd(float* graph, int n) {
-  size_t bytesize = n*n*sizeof(float);
-  float* distances = (float*)malloc(bytesize);
-  memcpy(distances, graph, bytesize);
+void floyd_apsp(float* distances, int n) {
   int changed;
 
   for (int k = 0; k < n; k++) {
@@ -24,20 +21,17 @@ float* floyd(float* graph, int n) {
     }
     if (changed == 0) break;
   }
-
-  return distances;
 }
 
-
 int main() {
-  float graph[16] = {
+  float distances[16] = {
     0.0, inf, 3.0, inf,
     2.0, 0.0, inf, inf,
     inf, 7.0, 0.0, 1.0,
     6.0, inf, inf, 0.0
   };
 
-  float* distances = floyd(graph, 4);
+  floyd_apsp(distances, 4);
 
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
@@ -45,4 +39,6 @@ int main() {
     }
     printf("\n");
   }
+
+  return 0;
 }
