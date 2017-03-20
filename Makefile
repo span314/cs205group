@@ -25,3 +25,10 @@ endif
 	$(CC) $(CFLAGS) $(DEPCFLAGS) -O$(O) -o $@ -c $<
 
 unit_tests: unit_tests.o graph.o
+
+# Hum...actually this is not working, but "make bfs" is...
+bfs: BFS.o graph.o
+	gcc graph.c  BFS.c -o BFS.o -lm
+
+clean:
+	-rm -f *.o

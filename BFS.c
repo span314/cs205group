@@ -228,6 +228,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	char* fn = argv[2];
+
 	Graph* G = build_graph_from_file(fn);
 	
 	// Correct for over-counting above 
@@ -236,10 +237,12 @@ int main(int argc, char *argv[]) {
 	int goal = atoi(argv[1]);
 
 	// Look for path with normal BFS
-	//traditional_BFS(G,goal,N);
+	// traditional_BFS(G,goal,N);
+	// (Useful for testing -- prints out path)
 	
-	// And with m-v implementation 
+	// And with m-v implementation
 	p_BFS(G,goal,N);
 
+	
 	free_graph(G);
 }
