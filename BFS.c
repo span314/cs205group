@@ -153,7 +153,7 @@ void traditional_BFS(Graph* G, int goal, int N){
 					
 	//p_arr(parent,N,"parent");
 	//p_arr(level,N,"level");
-	
+	printf("\n**Traditional BFS**");
 	if(level[goal-1] > 0){
 		printf("\nDistance to goal %i is %i",goal,level[goal-1]);
 		print_path(1,goal,parent);
@@ -185,7 +185,9 @@ void p_BFS(Graph* G, int goal, int N){
 
 	while (x[goal-1] == 0 && dist <= N){
 		dist += 1;
-		
+		#pragma acc loop
+		#pragma acc parallel private(j,i) 
+		{
 		for (i=0; i<N; i++){
 			y[i]=0;
 			parent_id = i+1;
@@ -196,7 +198,7 @@ void p_BFS(Graph* G, int goal, int N){
 				y[i] += 1 * x[j];
 				head = head->next;		
 			}
-		} 
+		}} 
 		
 		//p_arr(x,N,"x"); 
 		for (i = 0; i < N; i++){
@@ -209,7 +211,7 @@ void p_BFS(Graph* G, int goal, int N){
 		}}
 
 		if(x[goal-1] > 0){
-			printf("\nDistance to goal %i is %i",goal,level[goal-1]);
+			printf("\nDistance to goal %i is %i\n",goal,level[goal-1]);
 
 		} else{
 			printf("\nUnable to find path to %i after %i steps",goal,dist);
@@ -234,7 +236,7 @@ int main(int argc, char *argv[]) {
 	int goal = atoi(argv[1]);
 
 	// Look for path with normal BFS
-	traditional_BFS(G,goal,N);
+	//traditional_BFS(G,goal,N);
 	
 	// And with m-v implementation 
 	p_BFS(G,goal,N);
