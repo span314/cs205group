@@ -23,6 +23,7 @@ Graph* build_graph_from_file(char* fn) {
 	// Create graph object 
 	int u, v, w;
 	int n_nodes = pow(2,scale);
+	//int n_nodes= 100000;
 	Graph* G = create_graph(n_nodes*2); // Doubling node number because otherwise I run into memory issues 
 	
 	FILE *ptr_file;
@@ -185,9 +186,9 @@ void p_BFS(Graph* G, int goal, int N){
 
 	while (x[goal-1] == 0 && dist <= N){
 		dist += 1;
-		#pragma acc loop
-		#pragma acc parallel private(j,i) 
-		{
+		#pragma acc data copyin(N,y[:N],x[:N]) copy(y[:N],x[:N])
+		#pragma acc parallel loop private(i,j,parent_id)
+		//#pragma acc kernels
 		for (i=0; i<N; i++){
 			y[i]=0;
 			parent_id = i+1;
@@ -195,10 +196,11 @@ void p_BFS(Graph* G, int goal, int N){
 			//printf("at %i\n",parent_id);
 			while (head) {
 				j = head->node -1; 
-				y[i] += 1 * x[j];
+				y[i] =  x[i];
+				//y[i] += 1 * x[j];
 				head = head->next;		
 			}
-		}} 
+		} 
 		
 		//p_arr(x,N,"x"); 
 		for (i = 0; i < N; i++){
