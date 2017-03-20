@@ -3,9 +3,10 @@
 #include <string.h>
 #include "graph.h"
 
-// Note: Has a memory bug I'm still tracking down -- segfaults in some cases!  :(
-// Also, no parallelization yet... 
 // Usage: ./BFS 5 RMATGraphs/rmat_3-2.txt
+// Other examples: 
+// 756 RMATGraphs/rmat_10-4.txt
+// 1021 RMATGraphs/rmat_12-16.txt
 
 Graph* build_graph_from_file(char* fn) {
 	
@@ -22,7 +23,7 @@ Graph* build_graph_from_file(char* fn) {
 	// Create graph object 
 	int u, v, w;
 	int n_nodes = pow(2,scale);
-	Graph* G = create_graph(n_nodes*2);
+	Graph* G = create_graph(n_nodes*2); // Doubling node number because otherwise I run into memory issues 
 	
 	FILE *ptr_file;
 	ptr_file = fopen(fn,"r");
@@ -39,12 +40,13 @@ Graph* build_graph_from_file(char* fn) {
 	return G;
 }
 
-
 int* make_1D_int_arr(int arraySize){
 	// Make n-sized array of zeros 
-	int* arr;
-	arr = (int*) malloc(arraySize*sizeof(int));
 	
+	int* arr;
+	arr = (int*) malloc(arraySize*sizeof(int)*4);
+	// Making arrays larger than we should need 
+	// in theory to avoid memory issues
 	for (int i=1; i<arraySize; i++){
 		arr[i]=0;
 		}
@@ -56,7 +58,7 @@ int* make_1D_int_arr(int arraySize){
 int A_IJ(Graph* G,int i, int j){
 	// Treats graph as a matrix
 	// (slowly) look’s up if there’s an i,j edge
-	// (Used for testing) 
+	// (I used for testing, but this not used in functions below) 
  
 	i += 1;
 	j += 1; 
@@ -73,7 +75,7 @@ int A_IJ(Graph* G,int i, int j){
 
 	
 void print_path(int start,int goal,int* parent){
-	// Prints path from start to goal
+	// Pretty-prints path from start to goal
 	
 	char str[100];
 	sprintf(str, "%i", goal);
@@ -103,6 +105,119 @@ void p_arr(int* arr, int N, char* str){
 	
 }
 
+void traditional_BFS(Graph* G, int goal, int N){
+	// Traditional implementation of BFS that tracks distance and path
+	// From node 1 to goal node (if path exits) 
+
+	// Stores number of moves away from starting position 
+	int* level = make_1D_int_arr(N);
+	// Parent of node via most efficient path  
+	int* parent = make_1D_int_arr(N);
+	// Nodes at current level to follow 
+	int* frontier = make_1D_int_arr(N);
+	frontier[0] = 1; 
+		
+	int i,j;
+
+	int dist = 0;
+	int fron_limit = 1; 
+	int fron_start = 0;
+	int parent_id = 1;
+
+	while (level[goal-1]==0 && dist <= N){
+		dist += 1;
+		//printf("\n**Dist %i\n",dist);
+		
+		for (i=fron_start; i<fron_limit; i++){
+
+			parent_id = frontier[i];
+			Edge *head = G->edges[parent_id];
+			//printf("at %i\n",parent_id);
+			while (head) {
+				j = head->node -1; 
+				if(j !=0 && level[j] == 0){
+					//printf("found %i\n",j+1);
+					frontier[fron_limit] = j+1; 
+					fron_limit += 1;
+					level[j] = level[parent_id-1] + 1;
+					parent[j] = parent_id;	
+				}
+				head = head->next;
+			}
+			frontier[i] = -1;
+			fron_start +=1;
+		}
+		
+
+	}
+					
+	//p_arr(parent,N,"parent");
+	//p_arr(level,N,"level");
+	
+	if(level[goal-1] > 0){
+		printf("\nDistance to goal %i is %i",goal,level[goal-1]);
+		print_path(1,goal,parent);
+	} else{
+		printf("\nUnable to find path to %i after %i steps",goal,dist);
+	}
+}
+
+
+void p_BFS(Graph* G, int goal, int N){
+	// Distance-only BFS using matrix-vector multiplication method (as I understand it)
+	// Starts at node 0, and looks for path to goal node
+	//
+	// Note: I had a version that (almost) tracks the path as well, and it *mostly* works, 
+	// but there are bugs that I can’t figure out and we’re running out of time….
+
+	// Stores number of moves away from starting position 
+	int* level = make_1D_int_arr(N);
+	
+	int* x = make_1D_int_arr(N);
+	x[0] = 1;
+	
+	int* y = make_1D_int_arr(N);
+	
+	
+	int i,j;
+	int dist = 0;
+	int parent_id = 1;
+
+	while (x[goal-1] == 0 && dist <= N){
+		dist += 1;
+		
+		for (i=0; i<N; i++){
+			y[i]=0;
+			parent_id = i+1;
+			Edge *head = G->edges[parent_id];
+			//printf("at %i\n",parent_id);
+			while (head) {
+				j = head->node -1; 
+				y[i] += 1 * x[j];
+				head = head->next;		
+			}
+		} 
+		
+		//p_arr(x,N,"x"); 
+		for (i = 0; i < N; i++){
+			if((x[i] == 0) && (y[i] >= 1)){
+			// First time we've found path to goal, 
+			// update level array with current distance
+				level[i] = dist;
+			}
+			x[i] += y[i];
+		}}
+
+		if(x[goal-1] > 0){
+			printf("\nDistance to goal %i is %i",goal,level[goal-1]);
+
+		} else{
+			printf("\nUnable to find path to %i after %i steps",goal,dist);
+		}		
+	}
+
+
+
 int main(int argc, char *argv[]) {
 	
 	if (argc != 3) {
@@ -113,79 +228,16 @@ int main(int argc, char *argv[]) {
 	char* fn = argv[2];
 	Graph* G = build_graph_from_file(fn);
 	
-	int N = G -> node_count/2;
+	// Correct for over-counting above 
+	int N = G -> node_count/2; 
 
-	int goal = atoi(argv[1]); 
-	
-	// Stores number of moves away from starting position 
-	int* level = make_1D_int_arr(N);
-	// Parent of node via most efficient path  
-	int* parent = make_1D_int_arr(N);
-	// Nodes at current level to follow 
-	int* frontier = make_1D_int_arr(N);
-	frontier[0] = 1; 
-	
-	int* x = make_1D_int_arr(N);
-	x[0] = 1;
-	
-	int* y = make_1D_int_arr(N);
-	
-	
-	int i,j;
+	int goal = atoi(argv[1]);
 
-	int dist = 0;
-	int fron_limit = 1; 
-	int fron_start = 0;
-	int parent_id = 1;
-	while (level[goal-1]==0 && dist <= N){
-		dist += 1;
-		printf("\n**Dist %i\n",dist);
-		
-		for (i=fron_start; i<fron_limit; i++){
-			y[i]=0;
-			
-			//printf("\ni:%i,F_start:%i,F_limt:%i",i,fron_start,fron_limit);
-			//p_arr(frontier,N,"Fron");
-			
-			parent_id = frontier[i];
-			Edge *head = G->edges[parent_id];
-			printf("at %i\n",parent_id);
-			while (head) {
-				j = head->node -1; 
-				if(j !=0 && level[j] == 0){
-					//printf("found %i\n",j+1);
-					frontier[fron_limit] = j+1; 
-					fron_limit += 1;
-					level[j] = level[parent_id-1] + 1;
-					parent[j] = parent_id;	
-				}
-				
-				y[i] = y[i] || 1 + x[i];
-				head = head->next;
-			}
-			frontier[i] = -1;
-			fron_start +=1;
-		}
-		
-		p_arr(y,N,"y");
-		p_arr(x,N,"x"); 
-		for (i = 0; i < N; i++){
-			
-			x[i] += y[i];
-		}
-		
+	// Look for path with normal BFS
+	traditional_BFS(G,goal,N);
+	
+	// And with m-v implementation 
+	p_BFS(G,goal,N);
 
-	}
-					
-	p_arr(parent,N,"parent");
-	p_arr(level,N,"level");
-	
-	if(level[goal-1] > 0){
-		print_path(1,goal,parent);
-	} else{
-		printf("Unable to find path to %i",goal);
-	}
-	
 	free_graph(G);
-
 }
