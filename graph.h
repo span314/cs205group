@@ -2,6 +2,8 @@
 #define EDGE_H
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
 
 typedef struct Edge {
   int node;
@@ -15,6 +17,7 @@ typedef struct Graph {
 } Graph;
 
 Graph* create_graph(int node_count);
+Graph* build_graph_from_file(char* fn);
 
 void add_edge(Graph* g, int n1, int n2);
 void add_dedge(Graph* g, int n1, int n2);
