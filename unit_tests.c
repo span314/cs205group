@@ -43,6 +43,12 @@ void apsp_algorithms_work() {
     inf, 7.0, 0.0, 1.0,
     6.0, inf, inf, 0.0
   };
+  float distances1[16] = {
+    0.0, inf, 3.0, inf,
+    2.0, 0.0, inf, inf,
+    inf, 7.0, 0.0, 1.0,
+    6.0, inf, inf, 0.0
+  };
 
   // ...and one in quadtree form:
   float distances2[16];
@@ -53,6 +59,7 @@ void apsp_algorithms_work() {
   // Run both algorithms
   floyd_apsp(distances, 4);
   tropical_apsp(distances2, 4);
+  tropical_apsp2(distances1, 4);
 
   // Assert equality
   float expected[16] = {
@@ -65,6 +72,7 @@ void apsp_algorithms_work() {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
       ASSERT_EQUAL_INTS(expected[i*4+j], distances[i*4+j]);
+      ASSERT_EQUAL_INTS(expected[i*4+j], distances1[i*4+j]);
       ASSERT_EQUAL_INTS(expected[i*4+j], distances2[quadex(i,j)]);
     }
   }

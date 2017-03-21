@@ -5,6 +5,7 @@
 *.out
 .deps/
 unit_tests
+benchmark_apsp
 .DS_Store
 *.dSYM
 *.o
