@@ -10,15 +10,8 @@
 
 int* make_1D_int_arr(int arraySize){
 	// Make n-sized array of zeros 
-	
-	int* arr;
-	arr = (int*) malloc(arraySize*sizeof(int)*4);
-	// Making arrays larger than we should need 
-	// in theory to avoid memory issues
-	for (int i=1; i<arraySize; i++){
-		arr[i]=0;
-		}
-	
+	int* arr = (int*) malloc(arraySize*sizeof(int));
+	memset(arr, 0, arraySize*sizeof(int));
     return arr;
 }
 
