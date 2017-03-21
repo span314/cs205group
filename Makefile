@@ -1,4 +1,4 @@
-CC = gcc -std=c99 -g -ggdb3
+CC = gcc -std=c99 -g -ggdb3 -lm -DTRACE -D_BSD_SOURCE
 
 # Flags and other libraries
 override CFLAGS += -Wall -Wextra -pedantic -O$(O) -I$(INCLUDES)
@@ -24,11 +24,13 @@ endif
 %.o : %.c $(BUILDSTAMP)
 	$(CC) $(CFLAGS) $(DEPCFLAGS) -O$(O) -o $@ -c $<
 
-unit_tests: unit_tests.o graph.o
+unit_tests: unit_tests.o graph.o APSP.o quadtree.o
 
 # Hum...actually this is not working, but "make bfs" is...
 bfs: BFS.o graph.o
 	gcc graph.c  BFS.c -o BFS.o -lm
+
+benchmark_apsp: benchmark_apsp.o graph.o APSP.o quadtree.o
 
 clean:
 	-rm -f *.o

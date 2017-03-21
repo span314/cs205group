@@ -1,6 +1,6 @@
 #include "c_utest.h"
 #include "graph.h"
-#include "quadtree.h"
+#include "APSP.h"
 
 void graphs_work() {
   int n = 10;
@@ -34,8 +34,45 @@ void quadtree_indexing_works() {
   ASSERT_EQUAL_INTS(quadex(7, 7), 63);
 }
 
+void apsp_algorithms_work() {
+  // Initialize two distance matrices --
+  // One in row major form:
+  float distances[16] = {
+    0.0, inf, 3.0, inf,
+    2.0, 0.0, inf, inf,
+    inf, 7.0, 0.0, 1.0,
+    6.0, inf, inf, 0.0
+  };
+
+  // ...and one in quadtree form:
+  float distances2[16];
+  for (int i = 0; i < 4; i++)
+    for (int j = 0; j < 4; j++)
+      distances2[quadex(i,j)] = distances[i*4+j];
+
+  // Run both algorithms
+  floyd_apsp(distances, 4);
+  tropical_apsp(distances2, 4);
+
+  // Assert equality
+  float expected[16] = {
+    0, 10, 3, 4,
+    2, 0, 5, 6,
+    7, 7, 0, 1,
+    6, 16, 9, 0
+  };
+
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      ASSERT_EQUAL_INTS(expected[i*4+j], distances[i*4+j]);
+      ASSERT_EQUAL_INTS(expected[i*4+j], distances2[quadex(i,j)]);
+    }
+  }
+}
+
 int main() {
   TEST_THAT(graphs_work);
   TEST_THAT(quadtree_indexing_works);
+  TEST_THAT(apsp_algorithms_work);
   RUN_TESTS();
 }

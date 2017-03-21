@@ -1,10 +1,4 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include "quadtree.h"
-
-#define inf INFINITY
+#include "APSP.h"
 
 void floyd_apsp(float* distances, int n) {
   int changed;
@@ -66,33 +60,4 @@ void tropical_apsp(float* A, unsigned int n) {
 
     free(temp);
   }
-}
-
-int main() {
-  float distances[16] = {
-    0.0, inf, 3.0, inf,
-    2.0, 0.0, inf, inf,
-    inf, 7.0, 0.0, 1.0,
-    6.0, inf, inf, 0.0
-  };
-
-  float distances2[16];
-  for (int i = 0; i < 4; i++)
-    for (int j = 0; j < 4; j++)
-      distances2[quadex(i,j)] = distances[i*4+j];
-
-  floyd_apsp(distances, 4);
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) printf("%i ", (int)distances[i*4 + j]);
-    printf("\n");
-  }
-  printf("\n");
-
-  tropical_apsp(distances2, 4);
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) printf("%i ", (int)distances2[quadex(i,j)]);
-    printf("\n");
-  }
-
-  return 0;
 }

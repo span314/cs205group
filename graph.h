@@ -1,5 +1,5 @@
-#ifndef EDGE_H
-#define EDGE_H
+#ifndef GRAPH_H
+#define GRAPH_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,6 +25,7 @@ typedef struct EdgeList {
 EdgeList* build_edgelist(Graph* g);
 Graph* create_graph(int node_count);
 Graph* build_graph_from_file(char* fn);
+float* build_matrix_from_graph(Graph* g);
 
 void add_edge(Graph* g, int n1, int n2);
 void add_dedge(Graph* g, int n1, int n2);
