@@ -1,5 +1,18 @@
 #include "APSP.h"
 
+#pragma acc routine
+unsigned int qx(unsigned int y, unsigned int x) {
+  x = (x | (x << 8)) & 0x00FF00FF;
+  x = (x | (x << 4)) & 0x0F0F0F0F;
+  x = (x | (x << 2)) & 0x33333333;
+  x = (x | (x << 1)) & 0x55555555;
+  y = (y | (y << 8)) & 0x00FF00FF;
+  y = (y | (y << 4)) & 0x0F0F0F0F;
+  y = (y | (y << 2)) & 0x33333333;
+  y = (y | (y << 1)) & 0x55555555;
+  return x | (y << 1);
+}
+
 void floyd_apsp(float* D, int n) {
   int changed;
   for (int k = 0; k < n; k++) {
@@ -18,12 +31,14 @@ void floyd_apsp(float* D, int n) {
 }
 
 void tropical_gemm(float* A, float* B, float* C, unsigned int n) {
+  #pragma acc parallel loop copyin(A[:n*n], B[:n*n]) copyout(C[:n*n])
   for (unsigned int i = 0; i < n; i++) {
+    #pragma acc loop independent
     for (unsigned int j = 0; j < n; j++) {
       float c = inf;
       for (unsigned int k = 0; k < n; k++)
-        c = fmin(c, A[quadex(i,k)] + B[quadex(k,j)]);
-      C[quadex(i,j)] = c;
+        c = fmin(c, A[qx(i,k)] + B[qx(k,j)]);
+      C[qx(i,j)] = c;
     }
   }
 }
@@ -59,7 +74,9 @@ void tropical_apsp(float* A, unsigned int n) {
 }
 
 void tropical_gemm2(float* A, float* B, float* C, int n) {
+  #pragma acc parallel loop copyin(A[:n*n], B[:n*n]) copyout(C[:n*n])
   for (int i = 0; i < n; i++) {
+    #pragma acc loop independent
     for (int j = 0; j < n; j++) {
       float c = inf;
       for (int k = 0; k < n; k++)

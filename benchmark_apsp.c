@@ -8,14 +8,16 @@ int main() {
   //float* D1 = build_matrix_from_graph(g);
   //float* D2 = build_quadtree_from_matrix(D1, g->node_count);
   //float* D3 = build_matrix_from_graph(g);
-  int n = 64;
+  int n = 2048;
   float* D1 = (float*)malloc(n*n*sizeof(float));
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       if (i==j) {
         D1[i*n+j] = 0;
-      } else if (i*j % 3 == 0) {
+      } else if (i % 3 == 0) {
         D1[i*n+j] = 1;
+      } else if (j % 2 == 0) {
+        D1[i*n+j] = 2;
       } else {
         D1[i*n+j] = inf;
       }
@@ -40,8 +42,8 @@ int main() {
   t3 = get_timer();
 
   printf("the following should be equal\n");
-  for (int i = 0; i < 2; i++)
-    for (int j = 0; j < 2; j++)
+  for (int i = 0; i < 3; i++)
+    for (int j = 0; j < 3; j++)
       printf("%f = %f = %f\n", D1[i*n + j], D2[quadex(i,j)], D3[i*n + j]);
   printf("\n");
 
