@@ -1,5 +1,6 @@
 #include "c_utest.h"
 #include "graph.h"
+#include "quadtree.h"
 
 void graphs_work() {
   int n = 10;
@@ -27,7 +28,14 @@ void graphs_work() {
   free_graph(g);
 }
 
+void quadtree_indexing_works() {
+  ASSERT_EQUAL_INTS(quadex(0, 0), 0);
+  ASSERT_EQUAL_INTS(quadex(5, 0), 34);
+  ASSERT_EQUAL_INTS(quadex(7, 7), 63);
+}
+
 int main() {
   TEST_THAT(graphs_work);
+  TEST_THAT(quadtree_indexing_works);
   RUN_TESTS();
 }
