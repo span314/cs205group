@@ -28,7 +28,7 @@ void tropical_gemm(float* A, float* B, float* C, unsigned int n) {
   for (unsigned int i = 0; i < n; i++) {
     for (unsigned int j = 0; j < n; j++) {
       float c = inf;
-      for (int k = 0; k < n; k++)
+      for (unsigned int k = 0; k < n; k++)
         c = fmin(c, A[quadex(i,k)] + B[quadex(k,j)]);
       C[quadex(i,j)] = c;
     }
@@ -63,6 +63,8 @@ void tropical_apsp(float* A, unsigned int n) {
     tropical_gemm(A22, A21, temp, l); memcpy(A21, temp, size);
     tropical_gemm(A12, A22, temp, l); memcpy(A12, temp, size);
     tropical_gemm(A12, A21, temp, l); minplace(A11, temp, l);
+
+    free(temp);
   }
 }
 
