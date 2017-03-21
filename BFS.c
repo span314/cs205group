@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
 	int goal = atoi(argv[1]);
 
 	// Look for path with normal BFS
-	traditional_BFS(G,goal,N);
+	// traditional_BFS(G,goal,N);
 	// (Useful for testing -- prints out path)
 	
 	// And with m-v implementation
