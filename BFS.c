@@ -44,6 +44,7 @@ int A_IJ(Graph* G,int i, int j){
 	
 void print_path(int start,int goal,int* parent){
 	// Pretty-prints path from start to goal
+	// 1 -> 6 -> 5
 	
 	char str[100];
 	sprintf(str, "%i", goal);
@@ -99,10 +100,10 @@ void traditional_BFS(Graph* G, int goal, int N){
 		for (i=fron_start; i<fron_limit; i++){
 
 			parent_id = frontier[i];
-			Edge *head = G->edges[parent_id];
+			Edge *head = G->edges[parent_id-1];
 			//printf("at %i\n",parent_id);
 			while (head) {
-				j = head->node -1; 
+				j = head->node; 
 				if(j !=0 && level[j] == 0){
 					//printf("found %i\n",j+1);
 					frontier[fron_limit] = j+1; 
@@ -149,22 +150,18 @@ void p_BFS(Graph* G, int goal, int N){
 	
 	int i,j;
 	int dist = 0;
-	int parent_id = 1;
 
 	while (x[goal-1] == 0 && dist <= N){
 		dist += 1;
-		#pragma acc data copyin(N,y[:N],x[:N]) copy(y[:N],x[:N])
-		#pragma acc parallel loop private(i,j,parent_id)
-		//#pragma acc kernels
+		//#pragma acc data copyin(N,y[:N],x[:N]) copy(y[:N],x[:N])
+		//#pragma acc parallel loop private(i,j)
 		for (i=0; i<N; i++){
 			y[i]=0;
-			parent_id = i+1;
-			Edge *head = G->edges[parent_id];
-			//printf("at %i\n",parent_id);
-			while (head) {
-				j = head->node -1; 
-				y[i] =  x[i];
-				//y[i] += 1 * x[j];
+			Edge *head = G->edges[i];
+			//printf("at %i\n",i);
+			while (head != NULL) {
+				j = head->node; 
+				y[i] += 1 * x[j];
 				head = head->next;		
 			}
 		} 
@@ -201,12 +198,12 @@ int main(int argc, char *argv[]) {
 	Graph* G = build_graph_from_file(fn);
 	
 	// Correct for over-counting above 
-	int N = G -> node_count/2; 
+	int N = G -> node_count;
 
 	int goal = atoi(argv[1]);
 
 	// Look for path with normal BFS
-	// traditional_BFS(G,goal,N);
+	traditional_BFS(G,goal,N);
 	// (Useful for testing -- prints out path)
 	
 	// And with m-v implementation

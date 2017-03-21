@@ -6,7 +6,7 @@ export ACC_DEVICE_TYPE=host
 # Distance to goal 4 is 1
 # 1 -> 4
 
-./BFS.o 5 RMATGraphs/rmat_3-3.txt
+./BFS.o 4 RMATGraphs/rmat_3-3.txt
 # Distance to goal 4 is 2
 # 1 -> 7 -> 4
 
