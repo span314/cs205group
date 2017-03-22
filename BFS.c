@@ -151,8 +151,9 @@ void p_BFS(Graph* G, int goal, int N){
 
 	while (x[goal-1] == 0 && dist <= N){
 		dist += 1;
-		//#pragma acc data copyin(N,y[:N],x[:N]) copy(y[:N],x[:N])
-		//#pragma acc parallel loop private(i,j)
+		#pragma acc data copyin(y[:N],x[:N],edges[:edgelist->edge_count],edge_offset[:(N+1)]) copy(y[:N],x[:N])
+		{
+                #pragma acc parallel loop private(i,j)
 		for (i=0; i<N; i++){
 			y[i]=0;
                         for (j=edge_offset[i]; j<edge_offset[i+1]; j++) {
@@ -160,6 +161,7 @@ void p_BFS(Graph* G, int goal, int N){
                         } 
 		} 
 		//p_arr(x,N,"x"); 
+		#pragma acc parallel loop private(i,j)
 		for (i = 0; i < N; i++){
 			if((x[i] == 0) && (y[i] >= 1)){
 			// First time we've found path to goal, 
@@ -168,6 +170,7 @@ void p_BFS(Graph* G, int goal, int N){
 			}
 			x[i] += y[i];
 		}
+                }
        }
 
 
