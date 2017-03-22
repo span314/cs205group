@@ -9,6 +9,37 @@ Graph* create_graph(int node_count) {
   return g;
 }
 
+EdgeList* build_edgelist(Graph* g) {
+  EdgeList* l = malloc(sizeof(EdgeList));
+  l->edge_offset = malloc(sizeof(int) * (g->node_count + 1));
+  //First pass, loop through nodes to count edges and set offsets
+  int offset = 0;
+  for (int i = 0; i < g->node_count; i++) {
+    //set start offset
+    l->edge_offset[i] = offset;
+    Edge* head = g->edges[i];
+    while (head != NULL) {
+      offset++;
+      head = head->next;
+    }
+  }
+  //set final offset
+  l->edge_offset[g->node_count] = offset;
+  l->edge_count = offset;
+  //Second pass, store edges
+  l->edges = malloc(sizeof(int) * l->edge_count);
+  int edge_index = 0;
+  for (int node_index = 0; node_index < (g->node_count); node_index++) {
+    Edge* head = g->edges[node_index];
+    while (head != NULL) {
+      l->edges[edge_index] = head->node;
+      edge_index++;
+      head = head->next;
+    }
+  }
+  return l;
+}
+
 void add_edge(Graph* g, int node1, int node2) {
   add_dedge(g, node1, node2);
   add_dedge(g, node2, node1);
@@ -39,6 +70,12 @@ void free_graph(Graph* g) {
     free_edge(g->edges[i]);
   free(g->edges);
   free(g);
+}
+
+void free_edgelist(EdgeList* l) {
+  free(l->edges);
+  free(l->edge_offset);
+  free(l);
 }
 
 Graph* build_graph_from_file(char* fn) {

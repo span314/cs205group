@@ -144,21 +144,21 @@ void p_BFS(Graph* G, int goal, int N){
 	int i,j;
 	int dist = 0;
 
+        //Construct edgelist arrays because OpenAcc does not like linked list pointers
+        EdgeList* edgelist = build_edgelist(G);
+        int* const edges = edgelist->edges;
+        int* const edge_offset = edgelist->edge_offset; 
+
 	while (x[goal-1] == 0 && dist <= N){
 		dist += 1;
 		//#pragma acc data copyin(N,y[:N],x[:N]) copy(y[:N],x[:N])
 		//#pragma acc parallel loop private(i,j)
 		for (i=0; i<N; i++){
 			y[i]=0;
-			Edge *head = G->edges[i];
-			//printf("at %i\n",i);
-			while (head != NULL) {
-				j = head->node; 
-				y[i] += 1 * x[j];
-				head = head->next;		
-			}
+                        for (j=edge_offset[i]; j<edge_offset[i+1]; j++) {
+                                y[i] += 1 * x[edges[j]];
+                        } 
 		} 
-		
 		//p_arr(x,N,"x"); 
 		for (i = 0; i < N; i++){
 			if((x[i] == 0) && (y[i] >= 1)){
@@ -167,13 +167,15 @@ void p_BFS(Graph* G, int goal, int N){
 				level[i] = dist;
 			}
 			x[i] += y[i];
-		}}
+		}
+       }
+
 
 		if(x[goal-1] > 0){
 			printf("\nDistance to goal %i is %i\n",goal,level[goal-1]);
 
 		} else{
-			printf("\nUnable to find path to %i after %i steps",goal,dist);
+			printf("\nUnable to find path to %i after %i steps\n",goal,dist);
 		}		
 	}
 
