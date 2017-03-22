@@ -21,7 +21,7 @@ void print_quadtree_matrix(float* M, int n) {
 }
 
 int main() {
-  Graph* g = build_graph_from_file("RMATGraphs/rmat_6-2.txt");
+  Graph* g = build_graph_from_file("RMATGraphs/rmat_3-3.txt");
   int n = g->node_count;
   float* D1 = build_matrix_from_graph(g);
 
@@ -43,8 +43,10 @@ int main() {
 
   float* D2 = build_quadtree_from_matrix(D1, n);
   float* D3 = (float*)malloc(n*n*sizeof(float));
+  float* D4 = (float*)malloc(n*n*sizeof(float));
   memcpy(D3, D1, n*n*sizeof(float));
-  double t1, t2, t3;
+  memcpy(D4, D1, n*n*sizeof(float));
+  double t1, t2, t3, t4;
 
   //print_matrix(D1, n);
 
@@ -52,17 +54,21 @@ int main() {
   floyd_apsp_sequential(D1, n);
   t1 = get_timer();
 
-  set_timer();
-  tropical_quadtree_apsp(D2, (unsigned int)n);
-  t2 = get_timer();
+  //set_timer();
+  //floyd_apsp_parallel(D3, n);
+  //t2 = get_timer();
 
   set_timer();
-  tropical_apsp(D3, n);
+  tropical_quadtree_apsp(D2, (unsigned int)n);
   t3 = get_timer();
+
+  set_timer();
+  tropical_apsp(D4, n);
+  t4 = get_timer();
 
   //print_matrix(D1, n);
   //print_quadtree_matrix(D2, n);
   //print_matrix(D3, n);
 
-  printf("%f,%f,%f\n", t1, t2, t3);
+  printf("%f,%f,%f,%f\n", t1, t2, t3, t4);
 }
