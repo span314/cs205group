@@ -10,3 +10,6 @@ bench_apsp
 .DS_Store
 *.dSYM
 *.o
+*.aux
+*.log
+*.ipynb_checkpoints/
