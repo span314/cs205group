@@ -3,3 +3,4 @@
 unit_tests
 .DS_Store
 *.dSYM
+*.o
