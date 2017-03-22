@@ -107,3 +107,20 @@ Graph* build_graph_from_file(char* fn) {
 	fclose(ptr_file);
 	return G;
 }
+
+float* build_matrix_from_graph(Graph* graph) {
+  int n = graph->node_count;
+  float* M = malloc(n * n * sizeof(float));
+
+  for (int i = 0; i < n*n; i++) M[i] = INFINITY;
+  for (int i = 0; i < n; i++) {
+    Edge* edge = graph->edges[i];
+    while (edge != NULL) {
+      M[i*n + edge->node] = (float)edge->weight;
+      edge = edge->next;
+    }
+    M[i*n+i] = 0;
+  }
+
+  return M;
+}
