@@ -8,7 +8,7 @@ int main() {
   //float* D1 = build_matrix_from_graph(g);
   //float* D2 = build_quadtree_from_matrix(D1, g->node_count);
   //float* D3 = build_matrix_from_graph(g);
-  int n = 2048;
+  int n = 64;
   float* D1 = (float*)malloc(n*n*sizeof(float));
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
@@ -30,21 +30,21 @@ int main() {
   double t1, t2, t3;
 
   set_timer();
-  floyd_apsp(D1, n);
+  floyd_apsp_early_return(D1, n);
   t1 = get_timer();
 
   set_timer();
-  tropical_apsp(D2, (unsigned int)n);
+  tropical_quadtree_apsp(D2, (unsigned int)n);
   t2 = get_timer();
 
   set_timer();
-  tropical_apsp2(D3, n);
+  tropical_apsp(D3, n);
   t3 = get_timer();
 
   printf("the following should be equal\n");
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
-      printf("%f = %f = %f\n", D1[i*n + j], D2[quadex(i,j)], D3[i*n + j]);
+      printf("%f = %f = %f\n", D1[i*n + j], D2[qx(i,j)], D3[i*n + j]);
   printf("\n");
 
   printf("%f,%f,%f\n", t1, t2, t3);

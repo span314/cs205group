@@ -29,9 +29,9 @@ void graphs_work() {
 }
 
 void quadtree_indexing_works() {
-  ASSERT_EQUAL_INTS(quadex(0, 0), 0);
-  ASSERT_EQUAL_INTS(quadex(5, 0), 34);
-  ASSERT_EQUAL_INTS(quadex(7, 7), 63);
+  ASSERT_EQUAL_INTS(qx(0, 0), 0);
+  ASSERT_EQUAL_INTS(qx(5, 0), 34);
+  ASSERT_EQUAL_INTS(qx(7, 7), 63);
 }
 
 void apsp_algorithms_work() {
@@ -54,12 +54,12 @@ void apsp_algorithms_work() {
   float distances2[16];
   for (int i = 0; i < 4; i++)
     for (int j = 0; j < 4; j++)
-      distances2[quadex(i,j)] = distances[i*4+j];
+      distances2[qx(i,j)] = distances[i*4+j];
 
   // Run both algorithms
-  floyd_apsp(distances, 4);
-  tropical_apsp(distances2, 4);
-  tropical_apsp2(distances1, 4);
+  floyd_apsp_early_return(distances, 4);
+  tropical_quadtree_apsp(distances2, 4);
+  tropical_apsp(distances1, 4);
 
   // Assert equality
   float expected[16] = {
@@ -73,7 +73,7 @@ void apsp_algorithms_work() {
     for (int j = 0; j < 4; j++) {
       ASSERT_EQUAL_INTS(expected[i*4+j], distances[i*4+j]);
       ASSERT_EQUAL_INTS(expected[i*4+j], distances1[i*4+j]);
-      ASSERT_EQUAL_INTS(expected[i*4+j], distances2[quadex(i,j)]);
+      ASSERT_EQUAL_INTS(expected[i*4+j], distances2[qx(i,j)]);
     }
   }
 }

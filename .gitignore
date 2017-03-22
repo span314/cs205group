@@ -6,6 +6,7 @@
 .deps/
 unit_tests
 benchmark_apsp
+bench_apsp
 .DS_Store
 *.dSYM
 *.o
