@@ -119,6 +119,7 @@ float* build_matrix_from_graph(Graph* graph) {
       M[i*n + edge->node] = (float)edge->weight;
       edge = edge->next;
     }
+    M[i*n+i] = 0;
   }
 
   return M;
