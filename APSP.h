@@ -7,7 +7,6 @@
 #include <string.h>
 #define inf INFINITY
 
-void floyd_apsp_early_return(float* A, int n);
 void floyd_apsp_sequential(float* A, int n);
 void floyd_apsp_parallel(float* A, int n);
 

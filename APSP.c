@@ -1,22 +1,5 @@
 #include "APSP.h"
 
-void floyd_apsp_early_return(float* D, int n) {
-  int changed;
-  for (int k = 0; k < n; k++) {
-    changed = 0;
-    for (int i = 0; i < n; i++) {
-      for (int j = 0; j < n; j++) {
-        float detour = D[i*n + k] + D[k*n + j];
-        if (detour < D[i*n + j]) {
-          D[i*n + j] = detour;
-          changed += 1;
-        }
-      }
-    }
-    if (changed == 0) break;
-  }
-}
-
 void floyd_apsp_sequential(float* D, int n) {
   for (int k = 0; k < n; k++) {
     for (int i = 0; i < n; i++) {

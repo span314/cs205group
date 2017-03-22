@@ -57,7 +57,7 @@ void apsp_algorithms_work() {
       distances2[qx(i,j)] = distances[i*4+j];
 
   // Run both algorithms
-  floyd_apsp_early_return(distances, 4);
+  floyd_apsp_sequential(distances, 4);
   tropical_quadtree_apsp(distances2, 4);
   tropical_apsp(distances1, 4);
 
