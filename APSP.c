@@ -28,23 +28,25 @@ void tropical_quadtree_apsp(float* A, unsigned int n) {
   if (n > 1) {
     int l = n/2;
     size_t size = l*l*sizeof(float);
-    float* temp = (float*)malloc(size);
+    float* A12tmp = (float*)malloc(size);
+    float* A21tmp = (float*)malloc(size);
     float* A11 = A;
     float* A12 = A + n*n/4;
     float* A21 = A + n*n/2;
     float* A22 = A + 3*n*n/4;
 
     tropical_quadtree_apsp(A11, l);
-    tropical_quadtree_gemm(A11, A12, temp, l); memcpy(A12, temp, size);
-    tropical_quadtree_gemm(A21, A11, temp, l); memcpy(A21, temp, size);
-    tropical_quadtree_gemm(A21, A12, temp, l); minplace(A22, temp, l);
+    tropical_quadtree_gemm(A11, A12, A12tmp, l);// memcpy(A12, temp, size);
+    tropical_quadtree_gemm(A21, A11, A21tmp, l);// memcpy(A21, temp, size);
+    tropical_quadtree_gemm(A21tmp, A12tmp, A12, l); minplace(A22, A12, l);
 
     tropical_quadtree_apsp(A22, l);
-    tropical_quadtree_gemm(A22, A21, temp, l); memcpy(A21, temp, size);
-    tropical_quadtree_gemm(A12, A22, temp, l); memcpy(A12, temp, size);
-    tropical_quadtree_gemm(A12, A21, temp, l); minplace(A11, temp, l);
+    tropical_quadtree_gemm(A22, A21tmp, A21, l);// memcpy(A21, temp, size);
+    tropical_quadtree_gemm(A12tmp, A22, A12, l);// memcpy(A12, temp, size);
+    tropical_quadtree_gemm(A12, A21, A12tmp, l); minplace(A11, A12tmp, l);
 
-    free(temp);
+    free(A12tmp);
+    free(A21tmp);
   }
 }
 

@@ -1,24 +1,6 @@
 #include "timer.h"
 #include "graph.h"
-#include "APSP.h"
-
-void print_matrix(float* M, int n) {
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < n; j++)
-      printf("%0.1f ", M[i*n+j]);
-    printf("\n");
-  }
-  printf("\n");
-}
-
-void print_quadtree_matrix(float* M, int n) {
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < n; j++)
-      printf("%0.1f ", M[qx(i,j)]);
-    printf("\n");
-  }
-  printf("\n");
-}
+#include "BFS.h"
 
 int main() {
   Graph* g = build_graph_from_file("RMATGraphs/rmat_10-4.txt");
