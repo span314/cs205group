@@ -4,10 +4,11 @@
 #include "graph.h"
 #include "BFS.h"
 
-// Usage: ./BFS 5 RMATGraphs/rmat_3-2.txt
-// Other examples:
-// 756 RMATGraphs/rmat_10-4.txt
-// 1021 RMATGraphs/rmat_12-16.txt
+#define swap(x1, x2) do {\
+  int* tmp = x1;\
+  x1 = x2;\
+  x2 = tmp;\
+} while(0);
 
 int* zeros(int arraySize){
   // Make n-sized array of zeros
@@ -100,24 +101,6 @@ void traditional_BFS(Graph* G, int goal, int N) {
   }
 }
 
-//int p_BFS_length(const int* edges, const int* offsets, int N, in
-
-
-void p_BFS(Graph* G, int goal, int N){
-  //Construct edgelist arrays because OpenAcc does not like linked list pointers
-  EdgeList* edgelist = build_edgelist(G);
-  int* const edges = edgelist->edges;
-  int* const edge_offset = edgelist->edge_offset;
-
-  int dist = edgelist_BFS(edges, edge_offset, 0, goal, N);
-
-  if(dist >= 0) {
-    printf("\nDistance to goal %i is %i\n",goal, dist);
-  } else{
-    printf("\nUnable to find path to %i\n",goal);
-  }
-}
-
 int edgelist_BFS(const int* edges, const int* offsets, int start, int goal, int N) {
   int distance = 0;
   int reached_goal = 0;
@@ -129,9 +112,28 @@ int edgelist_BFS(const int* edges, const int* offsets, int start, int goal, int 
   while (!reached_goal && distance < N) {
     edgelist_matrix_vector_multiply(edges, offsets, x_old, x_new, N);
     reached_goal = x_new[goal];
-    int* swapx = x_old;
-    x_old = x_new;
-    x_new = swapx;
+    swap(x_old, x_new);
+    distance += 1;
+  }
+
+  free(x_old);
+  free(x_new);
+
+  return reached_goal ? distance : -1;
+}
+
+int edgelist_BFS_parallel(const int* edges, const int* offsets, int start, int goal, int N) {
+  int distance = 0;
+  int reached_goal = 0;
+  int* x_old = zeros(N);
+  int* x_new = zeros(N);
+  x_old[start] = 1;
+  x_new[start] = 1;
+
+  while (!reached_goal && distance < N) {
+    edgelist_matrix_vector_multiply_parallel(edges, offsets, x_old, x_new, N);
+    reached_goal = x_new[goal];
+    swap(x_old, x_new);
     distance += 1;
   }
 
@@ -152,3 +154,14 @@ void edgelist_matrix_vector_multiply(const int* edges, const int* offsets, int* 
   }
 }
 
+void edgelist_matrix_vector_multiply_parallel(const int* edges, const int* offsets, int* vector, int* result, int N) {
+  // loop over elements in our vector
+  #pragma acc parallel loop copyin(vector[:N], offsets[:N+1], edges[:offsets[N]]) copyout(result[:N])
+  for (int i = 0; i < N; i++) {
+    if (vector[i] == 1) {
+      for (int j = offsets[i]; j < offsets[i+1]; j++) {
+        result[edges[j]] = 1;
+      }
+    }
+  }
+}

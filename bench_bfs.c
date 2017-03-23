@@ -2,78 +2,38 @@
 #include "graph.h"
 #include "BFS.h"
 
-int main() {
-  Graph* g = build_graph_from_file("RMATGraphs/rmat_10-4.txt");
-  int n = g->node_count;
-  float* D1 = build_matrix_from_graph(g);
-
-  //int n = 64;
-  //float* D1 = (float*)malloc(n*n*sizeof(float));
-  //for (int i = 0; i < n; i++) {
-  //  for (int j = 0; j < n; j++) {
-  //    if (i==j) {
-  //      D1[i*n+j] = 0;
-  //    } else if (i % 3 == 0) {
-  //      D1[i*n+j] = 1;
-  //    } else if (j % 2 == 0) {
-  //      D1[i*n+j] = 2;
-  //    } else {
-  //      D1[i*n+j] = inf;
-  //    }
-  //  }
-  //}
-
-  float* D2 = build_quadtree_from_matrix(D1, n);
-  float* D3 = (float*)malloc(n*n*sizeof(float));
-  float* D4 = (float*)malloc(n*n*sizeof(float));
-  memcpy(D3, D1, n*n*sizeof(float));
-  memcpy(D4, D1, n*n*sizeof(float));
-  double t1, t2, t3, t4;
-
-  //print_matrix(D1, n);
-
-  set_timer();
-  floyd_apsp_sequential(D1, n);
-  t1 = get_timer();
-
-  //set_timer();
-  //floyd_apsp_parallel(D3, n);
-  //t2 = get_timer();
-
-  set_timer();
-  tropical_quadtree_apsp(D2, (unsigned int)n);
-  t3 = get_timer();
-
-  set_timer();
-  tropical_apsp(D4, n);
-  t4 = get_timer();
-
-  //print_matrix(D1, n);
-  //print_quadtree_matrix(D2, n);
-  //print_matrix(D3, n);
-
-  printf("%f,%f,%f,%f\n", t1, t2, t3, t4);
-}
-int main2(int argc, char *argv[]) {
-  if (argc != 3) {
-    printf("Usage: %s N_to_find filename\n",argv[0]);
+int main(int argc, char *argv[]) {
+  if (argc != 4) {
+    printf("Usage: %s start goal filename\n", argv[0]);
     return 1;
   }
 
-  char* fn = argv[2];
+  int start = atoi(argv[1]);
+  int goal = atoi(argv[2]);
+  char* filename = argv[3];
+  Graph* g = build_graph_from_file(filename);
+  int n = g->node_count;
+  EdgeList* edgelist = build_edgelist(g);
+  int* const edges = edgelist->edges;
+  int* const offsets = edgelist->edge_offset;
+  int d1, d2;
+  double t1, t2;
 
-  Graph* G = build_graph_from_file(fn);
+  set_timer();
+  d1 = edgelist_BFS(edges, offsets, start, goal, n);
+  t1 = get_timer();
 
-  // Correct for over-counting above
-  int N = G -> node_count;
+  set_timer();
+  d2 = edgelist_BFS_parallel(edges, offsets, start, goal, n);
+  t2 = get_timer();
 
-  int goal = atoi(argv[1]);
+  if (d1 == d2) {
+    printf("%d,%f,%f\n", n, t1, t2);
+    return 0;
+  } else {
+    printf("unequal distances! seq got %d, par got %d\n", d1, d2);
+    return 1;
+  }
 
-  // Look for path with normal BFS
-  // traditional_BFS(G,goal,N);
-  // (Useful for testing -- prints out path)
-
-  // And with m-v implementation
-  p_BFS(G,goal,N);
-  free_graph(G);
+  free_graph(g);
 }
