@@ -2,6 +2,7 @@
 #include <math.h>
 #include <string.h>
 #include "graph.h"
+#include "BFS.h"
 
 // Usage: ./BFS 5 RMATGraphs/rmat_3-2.txt
 // Other examples:
@@ -63,7 +64,7 @@ void traditional_BFS(Graph* G, int goal, int N) {
   int fron_start = 0;
   int parent_id = 1;
 
-  while (level[goal-1]==0 && dist <= N){
+  while (level[goal]==0 && dist <= N){
     dist += 1;
     //printf("\n**Dist %i\n",dist);
 
@@ -91,8 +92,8 @@ void traditional_BFS(Graph* G, int goal, int N) {
   //p_arr(parent,N,"parent");
   //p_arr(level,N,"level");
   printf("\n**Traditional BFS**");
-  if(level[goal-1] > 0){
-    printf("\nDistance to goal %i is %i",goal,level[goal-1]);
+  if(level[goal] > 0){
+    printf("\nDistance to goal %i is %i",goal,level[goal]);
     print_path(1,goal,parent);
   } else{
     printf("\nUnable to find path to %i after %i steps",goal,dist);
@@ -108,7 +109,7 @@ void p_BFS(Graph* G, int goal, int N){
   int* const edges = edgelist->edges;
   int* const edge_offset = edgelist->edge_offset;
 
-  int dist = p_BFS_internal(edges, edge_offset, goal, N);
+  int dist = edgelist_BFS(edges, edge_offset, 0, goal, N);
 
   if(dist >= 0) {
     printf("\nDistance to goal %i is %i\n",goal, dist);
@@ -117,23 +118,27 @@ void p_BFS(Graph* G, int goal, int N){
   }
 }
 
-int p_BFS_internal(const int* edges, const int* offsets, int goal, int N) {
+int edgelist_BFS(const int* edges, const int* offsets, int start, int goal, int N) {
+  int distance = 0;
+  int reached_goal = 0;
   int* x_old = zeros(N);
   int* x_new = zeros(N);
-  x_old[0] = 1;
+  x_old[start] = 1;
+  x_new[start] = 1;
 
-  int distance = 0;
-  while (!x_old[goal-1]) {
+  while (!reached_goal && distance < N) {
     edgelist_matrix_vector_multiply(edges, offsets, x_old, x_new, N);
+    reached_goal = x_new[goal];
+    int* swapx = x_old;
     x_old = x_new;
+    x_new = swapx;
     distance += 1;
   }
 
-  if (x_old[goal-1] == 0) {
-    return -1;
-  } else {
-    return distance;
-  }
+  free(x_old);
+  free(x_new);
+
+  return reached_goal ? distance : -1;
 }
 
 void edgelist_matrix_vector_multiply(const int* edges, const int* offsets, int* vector, int* result, int N) {
@@ -147,26 +152,3 @@ void edgelist_matrix_vector_multiply(const int* edges, const int* offsets, int* 
   }
 }
 
-int main(int argc, char *argv[]) {
-  if (argc != 3) {
-    printf("Usage: %s N_to_find filename\n",argv[0]);
-    return 1;
-  }
-
-  char* fn = argv[2];
-
-  Graph* G = build_graph_from_file(fn);
-
-  // Correct for over-counting above
-  int N = G -> node_count;
-
-  int goal = atoi(argv[1]);
-
-  // Look for path with normal BFS
-  // traditional_BFS(G,goal,N);
-  // (Useful for testing -- prints out path)
-
-  // And with m-v implementation
-  p_BFS(G,goal,N);
-  free_graph(G);
-}

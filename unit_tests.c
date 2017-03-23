@@ -1,6 +1,7 @@
 #include "c_utest.h"
 #include "graph.h"
 #include "APSP.h"
+#include "BFS.h"
 
 void graphs_work() {
   int n = 10;
@@ -26,6 +27,28 @@ void graphs_work() {
   ASSERT_EQUAL_INTS(g->edges[1]->next->node, 2);
 
   free_graph(g);
+}
+
+void bfs_algorithms_work() {
+  Graph* G = create_graph(8);
+  add_edge(G, 1, 0);
+  add_edge(G, 6, 0);
+  add_edge(G, 2, 1);
+  add_edge(G, 3, 1);
+  add_edge(G, 6, 1);
+  add_edge(G, 7, 3);
+  add_edge(G, 6, 5);
+  EdgeList* edgelist = build_edgelist(G);
+  int* edges = edgelist->edges;
+  int* offsets = edgelist->edge_offset;
+  int goal = 3;
+
+  ASSERT_EQUAL_INTS(1, edgelist_BFS(edges, offsets, 0, 1, 8));
+  ASSERT_EQUAL_INTS(2, edgelist_BFS(edges, offsets, 0, 2, 8));
+  ASSERT_EQUAL_INTS(2, edgelist_BFS(edges, offsets, 0, 3, 8));
+  ASSERT_EQUAL_INTS(-1, edgelist_BFS(edges, offsets, 0, 4, 8));
+  ASSERT_EQUAL_INTS(2, edgelist_BFS(edges, offsets, 0, 5, 8));
+  ASSERT_EQUAL_INTS(4, edgelist_BFS(edges, offsets, 5, 7, 8));
 }
 
 void quadtree_indexing_works() {
@@ -82,5 +105,6 @@ int main() {
   TEST_THAT(graphs_work);
   TEST_THAT(quadtree_indexing_works);
   TEST_THAT(apsp_algorithms_work);
+  TEST_THAT(bfs_algorithms_work);
   RUN_TESTS();
 }
