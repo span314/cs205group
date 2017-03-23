@@ -29,7 +29,7 @@
 
 \subsection*{Breadth-First Search (BFS)}
 
-stuff
+We initially represented the edges sparsely as linked lists. However, we ran into issues with how OpenAcc handles the pointers. We ended up  representing the edges as 2 arrays. The edges are sorted by the start point, so we only need to track the end points and the offsets. One array \texttt{edges} contains all the edge endpoints. The second array \texttt{offsets} contains all the offsets into the \texttt{edges} array. For convenience, the \texttt{offsets} array contains 1 more entry than the number of nodes such that the corresponding edges starting from node $i$ lie between indicies \texttt{offsets[i]} and \texttt{offset[i+1]} in the \texttt{edges} array.
 
 \subsection*{All-Pairs Shortest Path (APSP)}
 
