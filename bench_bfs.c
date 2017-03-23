@@ -54,3 +54,26 @@ int main() {
 
   printf("%f,%f,%f,%f\n", t1, t2, t3, t4);
 }
+int main2(int argc, char *argv[]) {
+  if (argc != 3) {
+    printf("Usage: %s N_to_find filename\n",argv[0]);
+    return 1;
+  }
+
+  char* fn = argv[2];
+
+  Graph* G = build_graph_from_file(fn);
+
+  // Correct for over-counting above
+  int N = G -> node_count;
+
+  int goal = atoi(argv[1]);
+
+  // Look for path with normal BFS
+  // traditional_BFS(G,goal,N);
+  // (Useful for testing -- prints out path)
+
+  // And with m-v implementation
+  p_BFS(G,goal,N);
+  free_graph(G);
+}
