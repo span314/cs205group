@@ -29,7 +29,56 @@
 
 \subsection*{Breadth-First Search (BFS)}
 
-We initially represented the edges sparsely as linked lists. However, we ran into issues with how OpenAcc handles the pointers. We ended up  representing the edges as 2 arrays. The edges are sorted by the start point, so we only need to track the end points and the offsets. One array \texttt{edges} contains all the edge endpoints. The second array \texttt{offsets} contains all the offsets into the \texttt{edges} array. For convenience, the \texttt{offsets} array contains 1 more entry than the number of nodes such that the corresponding edges starting from node $i$ lie between indicies \texttt{offsets[i]} and \texttt{offset[i+1]} in the \texttt{edges} array.
+To implement BFS as a \textit{sparse} matrix vector computation, we initially
+represented the graph as an array of linked lists, where each array element
+corresponds to a node, and each linked list corresponds to its edges.
+However, this approach ended up being incompatible with OpenAcc, which only
+copied the array over to the GPU (and left the linked lists on the host device).
+
+Instead, we devised a representation of the graph as two 1D arrays of edge endpoints
+and edge counts (actually offsets) for each node, which schematically looks like:
+
+\begin{center}
+\includegraphics[width=0.67\textwidth]{edgeoffset.png}
+\end{center}
+
+The \texttt{offsets} array has length $N+1$, where $N$ is the number of nodes,
+and is structured such that the $i$th and $i+1$th entries give the range
+of indices in the \texttt{edges} array that contain the edges for node $i$.
+If we needed to also store weights, we could include a second array of the same
+size as \texttt{edges} that contained them. The edge array's length is given by
+ the last element of \texttt{offsets}.
+
+This representation allowed us to implement sparse matrix-vector multiplication
+using only two relatively small 1D arrays, both of which are accessed sequentially.
+This already made our sequential implementation quite fast:
+
+\begin{lstlisting}[language=C,basicstyle=\ttfamilywithbold\footnotesize]
+int edgelist_BFS(int* edges, int* offsets, int start, int goal, int N) {
+  int distance = 0;
+  int reached_goal = 0;
+  int* x_old = zeros(N); x_old[start] = 1;
+  int* x_new = zeros(N); x_new[start] = 1;
+
+  while (!reached_goal && distance < N) {
+    edgelist_matrix_vector_multiply(edges, offsets, x_old, x_new, N);
+    reached_goal = x_new[goal];
+    swap(x_old, x_new);
+    distance += 1;
+  }
+
+  free(x_old);
+  free(x_new);
+  return reached_goal ? distance : -1;
+}
+
+void edgelist_matrix_vector_multiply(int* edges, int* offsets, int* vector, int* result, int N) {
+  for (int i = 0; i < N; i++)
+    if (vector[i] == 1)
+      for (int j = offsets[i]; j < offsets[i+1]; j++)
+        result[edges[j]] = 1;
+}
+\end{lstlisting}
 
 \subsection*{All-Pairs Shortest Path (APSP)}
 
