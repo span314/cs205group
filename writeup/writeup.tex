@@ -14,8 +14,8 @@
    plainpages=false, bookmarksnumbered, bookmarksopen=true, bookmarksopenlevel=1,
    hypertexnames=true, pdfhighlight=/O,
    urlcolor=webbrown, linkcolor=RoyalBlue, citecolor=webgreen,
-   pdfauthor={Andrew Ross},
-   pdfsubject={Stat 110},
+   pdfauthor={Andrew Ross, Shawn Pan, and Nathaniel Burbank},
+   pdfsubject={CS205},
    pdfkeywords={},
    pdfcreator={pdfLaTeX},
    pdfproducer={LaTeX with hyperref}
@@ -114,6 +114,7 @@ void edgelist_matrix_vector_multiply_parallel(const int* edges, const int* offse
 % holygpu05 ~/cs205hw2/cs205group 2033  (master)$ ./bench_bfs 0 3 RMATGraphs/rmat_14-16.txt
 % 16384,0.950000,3028.136000
 
+
 We also attempted to make both loops parallel, but the performance was approximately the same as parallelizing just the outer loop.
 
 \begin{lstlisting}[language=C,basicstyle=\ttfamilywithbold\footnotesize]
@@ -134,12 +135,16 @@ We also attempted to make both loops parallel, but the performance was approxima
 }
 \end{lstlisting}
 
+\begin{center}
+\includegraphics[width=0.67\textwidth]{bfs-results.png}
+\end{center}
+
 We suspect our parallel version was not faster than the serial version for several reasons.
 All the graph sizes took about 3 seconds on the GPU accelerated code, which suggests most of that is overhead in starting up the GPU.
 Bigger problem sizes may be needed to observe speedup.
-The inner loop has a variable number of iterations equal to the number of edges flowing out of each node.
-Therefore, work may not have been distributed equally among the parallel threads.
-The problem is not very cache friendly in memory access when writing the result of the matrix-vector multiplication.
+The inner loop has a variable number of iterations equal to the number of edges flowing out of each node. Therefore, work may not have been distributed equally among the parallel threads.
+The problem is not very cache friendly in memory access when writing the result of the matrix-vector multiplication. (Our \href{https://github.com/span314/cs205group/blob/master/BFS.c}{BFS code} and \href{https://github.com/span314/cs205group/blob/master/bench_bfs.c}{benchmarking tests} are available online.)
+
 
 \subsection*{All-Pairs Shortest Path (APSP)}
 
