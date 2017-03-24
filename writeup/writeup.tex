@@ -80,6 +80,67 @@ void edgelist_matrix_vector_multiply(int* edges, int* offsets, int* vector, int*
 }
 \end{lstlisting}
 
+We implemented the parallelized version with the OpenAcc \texttt{parallel loop} pragma.
+
+\begin{lstlisting}[language=C,basicstyle=\ttfamilywithbold\footnotesize]
+void edgelist_matrix_vector_multiply_parallel(const int* edges, const int* offsets, int* vector, int* result, int N) {
+  // loop over elements in our vector
+  #pragma acc parallel loop copyin(vector[:N], offsets[:N+1], edges[:offsets[N]]) copyout(result[:N])
+  for (int i = 0; i < N; i++) {
+    if (vector[i] == 1) {
+      for (int j = offsets[i]; j < offsets[i+1]; j++) {
+        result[edges[j]] = 1;
+      }
+    }
+  }
+}
+\end{lstlisting}
+
+
+% Data, parallel not better :(
+% Note: make now works properly
+% holygpu05 ~/cs205hw2/cs205group 2026  (master)$ ./bench_bfs 0 1 RMATGraphs/rmat_8-4.txt
+% 256,0.131000,3032.053000
+% holygpu05 ~/cs205hw2/cs205group 2027  (master)$ ./bench_bfs 0 1 RMATGraphs/rmat_10-4.txt
+% 1024,0.014000,3016.842000
+% holygpu05 ~/cs205hw2/cs205group 2028  (master)$ ./bench_bfs 0 1 RMATGraphs/rmat_10-16.txt
+% 1024,0.026000,2916.586000
+% holygpu05 ~/cs205hw2/cs205group 2030  (master)$ ./bench_bfs 0 1 RMATGraphs/rmat_12-16.txt
+% 4096,0.367000,3020.479000
+% holygpu05 ~/cs205hw2/cs205group 2031  (master)$ ./bench_bfs 0 1 RMATGraphs/rmat_14-16.txt
+% 16384,0.208000,3005.870000
+% holygpu05 ~/cs205hw2/cs205group 2032  (master)$ ./bench_bfs 0 2 RMATGraphs/rmat_14-16.txt
+% 16384,0.932000,3106.149000
+% holygpu05 ~/cs205hw2/cs205group 2033  (master)$ ./bench_bfs 0 3 RMATGraphs/rmat_14-16.txt
+% 16384,0.950000,3028.136000
+
+We also attempted to make both loops parallel, but the performance was approximately the same as parallelizing just the outer loop.
+
+\begin{lstlisting}[language=C,basicstyle=\ttfamilywithbold\footnotesize]
+#pragma acc data copyin(x_old[:N], offsets[:N+1], edges[:offsets[N]]) copyout(x_new[:N])
+{
+  while (!reached_goal && distance < N) {
+    #pragma acc parallel loop gang
+    for (int i = 0; i < N; i++) {
+      #pragma acc loop independent vector
+      for (int j = offsets[i]; j < offsets[i+1]; j++) {
+        x_new[edges[j]] |= x_old[i];
+      }
+    }
+    reached_goal = x_new[goal];
+    swap(x_old, x_new);
+    distance += 1;
+  }
+}
+\end{lstlisting}
+
+We suspect our parallel version was not faster than the serial version for several reasons.
+All the graph sizes took about 3 seconds on the GPU accelerated code, which suggests most of that is overhead in starting up the GPU.
+Bigger problem sizes may be needed to observe speedup.
+The inner loop has a variable number of iterations equal to the number of edges flowing out of each node.
+Therefore, work may not have been distributed equally among the parallel threads.
+The problem is not very cache friendly in memory access when writing the result of the matrix-vector multiplication.
+
 \subsection*{All-Pairs Shortest Path (APSP)}
 
 First, we implemented the sequential version of the Floyd-Warshall algorithm:
